@@ -22,17 +22,19 @@ def program_cozmo(robot: cozmo.robot.Robot):
             # COZMO ne reconnais pas directement la personne, on essaye alors de scanner plusieurs fois la personne
             i = 0
             if face_to_follow is "" :
-                robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabSquint2,ignore_body_track=True, ignore_lift_track=True, ignore_head_track=True,in_parallel=True)
-            while face_to_follow.name is "" and i < 50 :
-                try:
-                    face_to_follow = robot.world.wait_for_observed_face(timeout=5)
-                    robot.turn_towards_face(face_to_follow,in_parallel=True).wait_for_completed
-                except asyncio.TimeoutError:
-                    print("Perte du visage pendant le scan")
-                    face_to_follow = None
-                    break
-                i = i + 1
-                time.sleep(0.2)
+                robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabSquint2,ignore_body_track=True, ignore_lift_track=True,in_parallel=True)
+            
+            if face_to_follow is not None :
+                while face_to_follow.name is "" and i < 50 :
+                    try:
+                        face_to_follow = robot.world.wait_for_observed_face(timeout=5)
+                        robot.turn_towards_face(face_to_follow,in_parallel=True).wait_for_completed
+                    except asyncio.TimeoutError:
+                        print("Perte du visage pendant le scan")
+                        face_to_follow = None
+                        break
+                    i = i + 1
+                    time.sleep(0.2)
                     
 
 

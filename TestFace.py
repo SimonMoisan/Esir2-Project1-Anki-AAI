@@ -47,7 +47,7 @@ def program_cozmo(robot: cozmo.robot.Robot):
                 robot.set_all_backpack_lights(cozmo.lights.green_light)
                 robot.say_text("Bonjour" + face_to_follow.name,True,use_cozmo_voice=True, in_parallel=True).wait_for_completed()
             else :
-                image_inconnu = robot.world.latest_image
+                image_inconnu = robot.world.latest_image.raw_image
                 image_inconnu.save("inconnu" + numero_inconnu + ".bmp")
                 numero_inconnu = numero_inconnu + 1
                 robot.set_all_backpack_lights(cozmo.lights.white_light)
@@ -55,12 +55,6 @@ def program_cozmo(robot: cozmo.robot.Robot):
             
             face_to_follow = None
             time.sleep(3)
-        
-        
-
-
-        
-
 		
 
 cozmo.run_program(program_cozmo, use_viewer=True, use_3d_viewer=True)

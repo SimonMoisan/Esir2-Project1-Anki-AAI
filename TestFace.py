@@ -5,7 +5,10 @@ import asyncio
 
 
 def program_cozmo(robot: cozmo.robot.Robot):
-    
+    robot.camera.image_stream_enabled = True
+    robot.camera.color_image_enabled  = True
+    image_inconnu = None
+    numero_inconnu = 0
     
     while True :
         face_to_follow = None
@@ -44,8 +47,11 @@ def program_cozmo(robot: cozmo.robot.Robot):
                 robot.set_all_backpack_lights(cozmo.lights.green_light)
                 robot.say_text("Bonjour" + face_to_follow.name,True,use_cozmo_voice=True, in_parallel=True).wait_for_completed()
             else :
+                image_inconnu = robot.world.latest_image
+                image_inconnu.save("inconnu" + numero_inconnu + ".bmp")
+                numero_inconnu = numero_inconnu + 1
                 robot.set_all_backpack_lights(cozmo.lights.white_light)
-                robot.say_text("Inconnu",False,use_cozmo_voice=False,voice_pitch=-5, in_parallel=True).wait_for_completed()
+                robot.say_text("Inconnu",False,use_cozmo_voice=False,voice_pitch=-9, in_parallel=True).wait_for_completed()
             
             face_to_follow = None
             time.sleep(3)

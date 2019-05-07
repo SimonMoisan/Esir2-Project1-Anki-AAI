@@ -24,7 +24,7 @@ def program_cozmo(robot: cozmo.robot.Robot):
 
             # COZMO ne reconnais pas directement la personne, on essaye alors de scanner plusieurs fois la personne
             i = 0
-            if face_to_follow is "" :
+            if face_to_follow.name is "" :
                 robot.play_anim_trigger(cozmo.anim.Triggers.CodeLabSquint2,ignore_body_track=True, ignore_lift_track=True,in_parallel=True)
             
             if face_to_follow is not None :

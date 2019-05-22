@@ -15,6 +15,4 @@ def program_cozmo(robot: cozmo.robot.Robot):
 		robot.move_head(-1)
 		time.sleep(3)
 
-		
-
 cozmo.run_program(program_cozmo, use_viewer=True, use_3d_viewer=True)

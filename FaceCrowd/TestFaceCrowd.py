@@ -49,12 +49,13 @@ def program_cozmo(robot: cozmo.robot.Robot):
         while face_to_follow is not None :
             robot.turn_towards_face(face_to_follow, in_parallel=True).wait_for_completed()
             #Case if COZMO already know the face
-            if face_to_follow.name is not "" :
+            if face_to_follow.name is not "" and "pending" not in face_to_follow.name :
                 robot.set_all_backpack_lights(cozmo.lights.green_light)
                 robot.say_text("Bonjour" + face_to_follow.name,True,use_cozmo_voice=True, in_parallel=True).wait_for_completed()
             #Case if COZMO see a face which treatment is pending
-            elif face_to_follow.name is "pending for crowd" :
-                robot.set_all_backpack_lights(cozmo.lights.Color((128,128,1)))
+            elif "pending" in face_to_follow.name:
+                color = cozmo.lights.Light(cozmo.lights.Color(rgb=(128,128,1)))
+                robot.set_all_backpack_lights(color)
                 robot.say_text("Bonjour humain numéro" + face_to_follow.name.replace("pending for crowd", "") + ", merci d'attendre votre reconnaissance",True,use_cozmo_voice=True, in_parallel=True).wait_for_completed()
             #Case if COZMO don't know the face
             else :
@@ -65,11 +66,11 @@ def program_cozmo(robot: cozmo.robot.Robot):
                     treadController = CrowdController.ControllerFace(face_to_follow, image_inconnu, url ,100 , 5)
                     treadController.start()
                 except Exception as identifier:
-                    print("Erreur\n" + identifier)
+                    print("Erreur\n" + str(identifier))
                 robot.say_text("Bonjour inconnu, votre visage va être traité, merci de votre patience" ,False,use_cozmo_voice=False,voice_pitch=-9, in_parallel=True).wait_for_completed()
 
             
             face_to_follow = None
             time.sleep(3)
 
-cozmo.run_program(program_cozmo, use_viewer=True, use_3d_viewer=True)
+cozmo.run_program(program_cozmo, use_viewer=True)

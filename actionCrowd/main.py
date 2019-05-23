@@ -1,4 +1,4 @@
-import requests
+
 import json
 import uuid
 from PIL import Image
@@ -7,7 +7,6 @@ import base64
 import cozmo
 from cozmo.util import degrees, distance_mm, speed_mmps
 import time
-import lightCube
 import asyncio
 try:
     from PIL import Image

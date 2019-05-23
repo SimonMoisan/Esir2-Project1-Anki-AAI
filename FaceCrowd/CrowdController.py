@@ -20,7 +20,7 @@ class ControllerFace(Thread):
             buffered = BytesIO()
             self.picture.save(buffered, format="JPEG")
             img_base64 = "data:image/jpeg;base64,"
-            self.encode64 = img_base64 + str(base64.b64encode(buffered.getvalue()))
+            self.encode64 = img_base64 + str(base64.b64encode(buffered.getvalue())).replace("b'","")
             self.serverUrl = serverUrl
             self.Done = False
             self.faceUuid = str(uuid.uuid4())

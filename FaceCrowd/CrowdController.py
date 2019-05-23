@@ -13,22 +13,26 @@ from io import BytesIO
 class ControllerFace(Thread):
 
     def __init__(self, face, picture, serverUrl, tryMaxNumber, nbVoteMin):
-        Thread.__init__(self)
-        self.face = face
-        self.picture = picture.convert("RGB")
-        buffered = BytesIO()
-        self.picture.save(buffered, format="JPEG")
-        img_base64 = "data:image/jpeg;base64,"
-        self.encode64 = img_base64 + base64.b64encode(buffered.getvalue())
-        self.serverUrl = serverUrl
-        self.Done = False
-        self.faceUuid = str(uuid.uuid4())
-        no_tiret = self.faceUuid.replace('-',"")
-        no_number = ''.join(i for i in no_tiret if not i.isdigit())
-        self.face.rename_face("pending" + no_number) # Only alphanumerics
-        self.jsonModel = "{id: id_template, image: encoded_template}" # If you want another jsonModel, just verify you have id_template and encode_template
-        self.tryMaxNumber = tryMaxNumber
-        self.nbVoteMin = nbVoteMin
+        try:
+            Thread.__init__(self)
+            self.face = face
+            self.picture = picture.convert("RGB")
+            buffered = BytesIO()
+            self.picture.save(buffered, format="JPEG")
+            img_base64 = "data:image/jpeg;base64,"
+            self.encode64 = img_base64 + str(base64.b64encode(buffered.getvalue()))
+            self.serverUrl = serverUrl
+            self.Done = False
+            self.faceUuid = str(uuid.uuid4())
+            no_tiret = self.faceUuid.replace('-',"")
+            no_number = ''.join(i for i in no_tiret if not i.isdigit())
+            self.face.rename_face("pending" + no_number) # Only alphanumerics
+            self.jsonModel = "{id: id_template, image: encoded_template}" # If you want another jsonModel, just verify you have id_template and encode_template
+            self.tryMaxNumber = tryMaxNumber
+            self.nbVoteMin = nbVoteMin
+        except Exception as identifier:
+            print("Thread init error " + self.faceUuid)
+            self.face.erase_enrolled_face()
 
     def run(self):
 

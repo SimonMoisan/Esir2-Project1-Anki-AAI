@@ -1,35 +1,27 @@
 <!DOCTYPE html>
+
+
 <html>
+    <?php header("Access-Control-Allow-Origin: *"); ?>
     <head>
         <title>Page de crowdfunding</title>
         <link rel="stylesheet" href="style.css" />
         <meta charset="utf-8" />
     </head>
     <body>
-        <h1>Page de test de reconnaissance d'image avec Crowdfunding</h1>
-        
-        <h2>Récapitulatif des versions du site (version actuelle = version 1) : <br/></h2>
-        <p>
-            Version 0 :<br/>
-            Cette page a pour but de générer une image avec un champ de réponse permettant de définir <br/>
-            ce que contient l'image. Dans cette version 3 utilisateurs peuvent répondre, il dois y avoir <br/>
-            au moins un premier utilisateur à répondre pour envoyer le formulaire. Si une réponse envoyeée <br/>
-            correspond au nom de l'image, on envois une réponse positive.<br/>
-            <br/>
-        </p>
-        <p>
-            Version 1 :<br/>
-            Dans cette version, on donne la réponse la plus récurente.
-        </p>
         
         
         <?php 
+            $id = $_GET['id'];
             $nomImage = "panda";
         ?>
         
         <img src="images/<?php echo $nomImage ?>.jpg" alt="Photo à deviner" />
         
-        <form method="post" action="index.php">
+        <div id="getImg">
+        </div>
+        
+        <form method="post" action="index.php?id=<?php echo $id ?>">
             <p>Réponse user 1 : </p><input type="text" name="AnswerUser1" required="required"/><br/>
             <p>Réponse user 2 : </p><input type="text" name="AnswerUser2" /><br/>
             <p>Réponse user 3 : </p><input type="text" name="AnswerUser3" /><br/>
@@ -44,10 +36,11 @@
             <p>Réponse user 12 : </p><input type="text" name="AnswerUser12" /><br/>
             <input type="submit" value="Valider" /><br/>
         </form>
-        
 
-        
         <?php
+    
+            
+    
             //Si le formulaire a été envoyé, on a au moins une réponse d'utilisateur
             if($_POST['AnswerUser1'] != NULL)
             {
@@ -63,16 +56,42 @@
                     }
                 }
                 
-                echo "<br/>Formulaire envoyé <br/>";
-                //echo compareName($tab, $nomImage);
-                echo vote($tab);
+                
+                echo $id;
+                echo $answer = vote($tab);
+                echo $nbrVotes = sizeof($tab);
+                
+                
+                //Envois de la requête curl contenant la réponse vers l'API
+                //API URL
+                $url = 'http://localhost:3000/v1/answers';
+                //create a new cURL resource
+                $ch = curl_init($url);
+                //setup request to send json via POST
+                $data = array(
+                    'id' => $id,
+                    'answer' => $answer,
+                    'nbrVotes' => $nbrVotes
+                );
+                $payload = json_encode($data);
+                //attach encoded JSON string to the POST fields
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                //set the content type to application/json
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+                //return response instead of outputting
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                //execute the POST request
+                $result = curl_exec($ch);
+                //close cURL resource
+                curl_close($ch);
+                
             }
         ?>
 
 
          
-         <!--<script src="js/ajax.js"></script>
-         <script src="js/cours.js"></script>-->
+         <script src="js/ajax.js"></script>
+         <script src="js/cours.js"></script>
         
     </body>
 </html>

@@ -1,20 +1,20 @@
 const express = require('express')
 const router = express.Router()
 
-/* GET a specific image by imageId */
-router.get('/:imageId', function (req, res, next) {
-  const imageId = req.params.imageId
+/* GET a specific image by id */
+router.get('/:id', function (req, res, next) {
+  const id = req.params.id
 
   /* istanbul ignore else */
-  if (imageId) {
+  if (id) {
     try {
-      const imagesFound = imagesModel.get(imageId)
+      const imagesFound = imagesModel.get(id)
       if (imagesFound) {
         res.json(imagesFound)
       } else {
         res
           .status(404)
-          .json({message: `Image not found with image id ${imageId}`})
+          .json({message: `Image not found with image id ${id}`})
       }
     } catch (exc) {
       /* istanbul ignore next */
@@ -55,7 +55,7 @@ router.post('/', function (req, res, next) {
   } else {
     res
       .status(400)
-      .json({message: 'Wrong parameters'})
+      .json({message: 'Wrong parameters '})
   }
 })
 

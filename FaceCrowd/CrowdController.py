@@ -18,7 +18,7 @@ class ControllerFace(Thread):
         self.picture = picture.convert("RGB")
         buffered = BytesIO()
         self.picture.save(buffered, format="JPEG")
-        img_base64 = bytes("data:image/jpeg;base64,", encoding='utf-8')
+        img_base64 = "data:image/jpeg;base64,"
         self.encode64 = img_base64 + base64.b64encode(buffered.getvalue())
         self.serverUrl = serverUrl
         self.Done = False

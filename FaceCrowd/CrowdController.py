@@ -9,7 +9,6 @@ import os
 import base64
 import json
 from io import BytesIO
-import bottle
 
 class ControllerFace(Thread):
 
@@ -19,7 +18,8 @@ class ControllerFace(Thread):
         self.picture = picture.convert("RGB")
         buffered = BytesIO()
         self.picture.save(buffered, format="JPEG")
-        self.encode64 = base64.b64encode(buffered.getvalue())
+        img_base64 = bytes("data:image/jpeg;base64,", encoding='utf-8')
+        self.encode64 = img_base64 + img_base64.b64encode(buffered.getvalue())
         self.serverUrl = serverUrl
         self.Done = False
         self.faceUuid = str(uuid.uuid4())
@@ -31,8 +31,6 @@ class ControllerFace(Thread):
         self.nbVoteMin = nbVoteMin
 
     def run(self):
-        
-        bottle.BaseRequest.MEMFILE_MAX = 200 * 200
 
         response_send = self.sendPicture()
 

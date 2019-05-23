@@ -1,4 +1,4 @@
-import requests
+
 import json
 import uuid
 from PIL import Image
@@ -7,7 +7,6 @@ import base64
 import cozmo
 from cozmo.util import degrees, distance_mm, speed_mmps
 import time
-import lightCube
 import asyncio
 try:
     from PIL import Image
@@ -47,7 +46,7 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
             pictureIsTaken =False
             
     #save la photo prise pour pouvoir l'exposer au crowsourcing
-    image.save("Cube action" + str(numero_cube) + ".bmp")
+    image.save("CubeAction" + str(numero_cube) + ".bmp")
     numero = numero + 1
 
     while (answer_json["nbrVotes"]< nb_vote):
@@ -90,11 +89,11 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
     return 1
 
 
-cozmo.run_program(program_cozmo_action)
+cozmo.run_program(program_cozmo_action, 1)
 
 
 #################################################
-# Fonctions pour intéragir avec les crowsourcing
+# Fonctions pour intéragir avec le crowdsourcing
 ################################################
 
 def send_picture(image, url):
@@ -114,9 +113,9 @@ def recup_picture_info(url, code_uuid):
     if response.status_code is 200 :
         j = response.json
         if None :
-            pass #TODO responses not ready
+            pass 
         else :
-            response_delete = requests.delete(url + "/" + code_uuid) #TODO Error handling if delete doesn't work on the distant server
+            response_delete = requests.delete(url + "/" + code_uuid)
             os.remove("./Pendings/pending_" + code_uuid + ".png")
             return j      
     else :

@@ -14,12 +14,11 @@ import bottle
 class ControllerFace(Thread):
 
     def __init__(self, face, picture, serverUrl, tryMaxNumber, nbVoteMin):
-        bottle.BaseRequest.MEMFILE_MAX = 200 * 200
         Thread.__init__(self)
         self.face = face
-        self.picture = picture
+        self.picture = picture.convert("RGB")
         buffered = BytesIO()
-        self.picture.save(buffered, format="BMP")
+        self.picture.save(buffered, format="JPEG")
         self.encode64 = base64.b64encode(buffered.getvalue())
         self.serverUrl = serverUrl
         self.Done = False
@@ -83,5 +82,9 @@ class ControllerFace(Thread):
         else :
             return "Status Code from delete : " + response.code() + "\n" + response.body
 
+    def convertToJpeg(self, im):
+        with BytesIO() as f:
+            im.save(f, format='JPEG')
+            return f.getvalue()
 
         

@@ -10,7 +10,7 @@ describe('Answers tests', () => {
   it("should list an answer on /v1/answers/<imageName> GET", done => {
       chai
       .request(app)
-      .get('/v1/answers/pachiderme')
+      .get('/v1/answers/654de540-877a-65e5-4565-2d42b21b1a3e')
       .end((err, res) => {
         res
           .should
@@ -19,9 +19,9 @@ describe('Answers tests', () => {
         res.should.be.json
         res
           .body
-          .imageName
+          .id
           .should
-          .equal('pachiderme')
+          .equal('654de540-877a-65e5-4565-2d42b21b1a3e')
         done()
     })
   })
@@ -45,7 +45,23 @@ describe('Answers tests', () => {
         })
   })  
     
-    
+   it("should add a SINGLE answer on /v1/answers POST", done => {
+    chai
+      .request(app)
+      .post('/v1/answers')
+      .send({id: "45745c60-7b1a-11e8-9c9c-2d42b21b1a3e", answer:"mouche", nbrVotes:8})
+      .end((err, res) => {
+        res.should.have.status(201)
+        res.should.be.json
+        res.body.should.be.a('object')
+        res.body.should.have.property('id')
+        res.body.should.have.property('answer')
+        res.body.should.have.property('nbrVotes')
+        res.body.answer.should.equal('mouche')
+        res.body.nbrVotes.should.equal(8)
+        done()
+      })
+  })     
     
     
 })

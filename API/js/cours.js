@@ -16,18 +16,36 @@ ajaxGet("http://localhost/esir2_projet_aii_site_crowdfunding/javascript-web-srv/
 });
 
 
-/*var premMinElt = document.getElementById("premMin");
-// Accès aux informations publiques sur le Premier Ministre
-ajaxGet("https://www.data.gouv.fr/api/1/organizations/premier-ministre/", function (reponse) {
-    var premierMinistre = JSON.parse(reponse);
-    // Ajout de la description et du logo dans la page web
-    var descriptionElt = document.createElement("p");
-    descriptionElt.textContent = premierMinistre.description;
-    var logoElt = document.createElement("img");
-    logoElt.src = premierMinistre.logo;
-    premMinElt.appendChild(descriptionElt);
-    premMinElt.appendChild(logoElt);
-});*/
+const getImage = document.getElementById("getImg");
+ajaxGet("http://localhost:3000/v1/images/45745c60-7b1a-11e8-9c9c-2d42b21b1a3e", function (reponse){
+    const image = JSON.parse(reponse);
+    const getIdElt = document.createElement("div");
+    getIdElt.textContent = image.id;
+    getIdElt.id = "id"
+    const getImgElt = document.createElement("img");
+    getImgElt.src = image.image;
+    getImage.appendChild(getIdElt);
+    getImage.appendChild(getImgElt);
+});
+
+
+const getAllId = document.getElementById("getAllId");
+ajaxGet("http://localhost:3000/v1/images", function (reponse){
+    const ids = JSON.parse(reponse);
+    ids.forEach(function (id) {
+        // Ajout du titre et du contenu de chaque article
+        var p = document.createElement("p");
+        var idElt = document.createElement("a");
+        idElt.href = "index.php?id=" + id.id;
+        idElt.textContent = id.id;
+        p.appendChild(idElt);
+        getAllId.appendChild(p);
+        
+    });
+});
+
+
+
 
 
 // Création d'un objet FormData

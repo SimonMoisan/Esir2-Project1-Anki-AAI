@@ -19,8 +19,62 @@ except:
     print("Looks like you need to install Pillow")
 
 
+#################################################
+# Fonctions pour intéragir avec le crowdsourcing
+################################################
 
-def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
+def sendPicture(encode64, url, id_cube):
+    response = requests.post(url, json={"id": id_cube, "image": str(encode64)})
+    return response
+
+def checkPicture(url, id_cube) :
+    response = requests.get(url.replace("images","answers") + "/" + id_cube)
+    return response
+
+#####################################################
+# Fonctions pour allumer les cubes
+#####################################################
+  
+def light_off(cube):
+    # on éteint le cube
+    if cube is not None:
+        cube.set_lights(cozmo.lights.off_light)
+    else:
+        cozmo.logger.warning("Cozmo is not connected to a LightCube1Id cube - check the battery.")
+
+
+def crazy_color_1(cube, colors):
+    rolls = 40
+    while rolls >= 0 :
+        cube.set_lights(colors[rolls % len(colors)])
+        rolls = rolls - 1
+        time.sleep(0.5)
+
+def crazy_color_2(cube) :
+    r = 0
+    g = 0
+    b = 0
+    rolls = 40
+    while rolls >= 0 :
+        r = uniform(0, 255)
+        g = uniform(0, 255)
+        b = uniform(0, 255)
+        #print(str(r) + " " + str(g) + " " + str(b))
+        color_actual = cozmo.lights.Light(cozmo.lights.Color(rgb=(int(r),int(g),int(b))))
+        cube.set_lights(color_actual)
+        rolls = rolls - 1
+        time.sleep(0.5)
+
+
+
+
+
+def color_light(cube,color):
+    cube.set_lights(color)
+    time.sleep(20)
+
+
+def program_cozmo_action(robot: cozmo.robot.Robot):
     
     #params
     robot.camera.image_stream_enabled = True
@@ -66,12 +120,16 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
     else :
         done = False
         while not done :
+            color = cozmo.lights.Light(cozmo.lights.Color(rgb=(178,128,1)))
+            robot.set_all_backpack_lights(color)
             time.sleep(3)
             answer_text = checkPicture(url, numero_cube)
             answer_json = answer_text.json()
             if answer_json.get("nbrVotes") is not None :
                 if answer_json.get("nbrVotes") > nbrVotesMin:
                     done = True
+                    color = cozmo.lights.Light(cozmo.lights.Color(rgb=(1,128,128)))
+                    robot.set_all_backpack_lights(color)
 
     # Réaliser les actions demandés
     action = answer_json.get("answer")
@@ -93,6 +151,8 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
         crazy_color_2(cube)
     elif(action == "off"):
         light_off(cube)
+    elif "say" in action :
+        robot.say_text(action.replace("say ", ""),True,use_cozmo_voice=True, in_parallel=True).wait_for_completed()
     else:
         error_string = "This action isn't a valide answer : " + action + "\nThe answer can be : red, blue, green, white, off, crazy_color_1, crazy_color_2"
         raise ValueError(error_string)
@@ -103,56 +163,6 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
 cozmo.run_program(program_cozmo_action, 1)
 
 
-#################################################
-# Fonctions pour intéragir avec le crowdsourcing
-################################################
 
-def sendPicture(encode64, url, id_cube):
-    response = requests.post(url, json={"id": id_cube, "image": str(encode64)})
-    return response
-
-def checkPicture(url, id_cube) :
-    response = requests.get(url.replace("images","answers") + "/" + id_cube)
-    return response
-
-#####################################################
-# Fonctions pour allumer les cubes
-#####################################################
-  
-def light_off(cube):
-    # on éteint le cube
-    if cube is not None:
-        cube.set_lights(cozmo.lights.off_light)
-    else:
-        cozmo.logger.warning("Cozmo is not connected to a LightCube1Id cube - check the battery.")
-
-
-def crazy_color_1(cube, colors):
-    rolls = 40
-    while rolls >= 0 :
-        cube.set_lights(colors[rolls % len(colors)])
-        rolls = rolls - 1
-        time.sleep(0.5)
-
-def crazy_color_2(cube) :
-    r = 0
-    g = 0
-    b = 0
-    rolls = 40
-    while rolls >= 0 :
-        r = uniform(0, 255)
-        g = uniform(0, 255)
-        b = uniform(0, 255)
-        color_actual = cozmo.lights.Light(cozmo.lights.Color(rgb=(r,g,b)))
-        cube.set_lights(color_actual)
-        rolls = rolls - 1
-        time.sleep(0.5)
-
-
-
-
-
-def color_light(cube,color):
-    cube.set_lights(color)
 
 

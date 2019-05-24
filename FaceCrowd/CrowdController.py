@@ -48,10 +48,10 @@ class ControllerFace(Thread):
                         if response_text["nbrVotes"] >= self.nbVoteMin :
                             self.face.rename_face(response_text["answer"])
                             isOkay = self.checkIfEndOk
-                            if isOkay is "Ok":
+                            if "Ok" is "Ok": #A changer si on a un delete sur le serveur API par "if isOkay is 'Ok'"
                                 self.Done = True
                             else :
-                                print("Error in cleaning :\n" + isOkay + "\nErasing Face " + self.faceUuid)
+                                print("Error in cleaning :\n" + str(isOkay) + "\nErasing Face " + self.faceUuid)
                                 self.face.erase_enrolled_face()
                         elif tryNumber >= self.tryMaxNumber :
                             print("The number of try reached the max allowed, erasing face " + self.faceUuid)

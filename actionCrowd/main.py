@@ -8,6 +8,11 @@ import cozmo
 from cozmo.util import degrees, distance_mm, speed_mmps
 import time
 import asyncio
+from io import BytesIO
+import json
+import uuid
+import requests
+from random import uniform
 try:
     from PIL import Image
 except:
@@ -22,9 +27,9 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
     robot.camera.color_image_enabled  = True
     cube=None
     numero_cube =0
-    nb_vote=nb_vote_init
     answer_json = 0
-    url = "http://localhost:3000/V1/image"
+    url = "http://localhost:3000/v1/images"
+    nbrVotesMin = 3
 
     while(cube == None):
         #permet de voir l'environnement qu'entour cozmo
@@ -34,39 +39,45 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
         look_around.stop()      
 
     # aller jusqu'a la position du cube identifié
-    robot.go_to_pose(Pose(cube.pose.position.x, cube.pose.position.y, cube.pose.position.z, angle_z=degrees(0)), relative_to_robot=True).wait_for_completed()
+    robot.go_to_pose(cozmo.util.Pose(cube.pose.position.x, cube.pose.position.y, cube.pose.position.z, angle_z=degrees(0)), relative_to_robot=True).wait_for_completed()
 
     # take the picture of the cube
     pictureIsTaken = True
     while pictureIsTaken:
-        duration_s = 0.1  # time to display each camera frame on Cozmo's face
+        time.sleep(0.1)
         latest_image = robot.world.latest_image
         if latest_image is not None:
             image = latest_image.raw_image
-            pictureIsTaken =False
+            pictureIsTaken = False
             
     #save la photo prise pour pouvoir l'exposer au crowsourcing
+    numero_cube = str(uuid.uuid4())
     image.save("CubeAction" + str(numero_cube) + ".bmp")
-    numero = numero + 1
+    image = image.convert("RGB")
+    buffered = BytesIO()
+    image.save(buffered, format="JPEG")
+    img_base64 = "data:image/jpeg;base64,"
+    encode64 = img_base64 + str(base64.b64encode(buffered.getvalue())).replace("b'","").replace("'","")
 
-    while (answer_json["nbrVotes"]< nb_vote):
-        # send picture to the crowsourcing panel
-        id_cube = send_picture(image, url)
-        if (id_cube == None):
-            robot.say_text("Error cannot ask the crowsourcing")
-            return None
-
-        # récupération des infos
-        answer_json = recup_picture_info(url, id_cube)
-        if (answer_json == None):
-            robot.say_text("Error result")
-            return None
+    response_send = sendPicture(encode64, url, numero_cube)
+    if response_send.status_code is not 201 :
+        error_string = "Error, can't POST the picture to the server API : " + response_send.status_code + "\n" + response_send.text
+        raise IOError(error_string)
+    else :
+        done = False
+        while not done :
+            time.sleep(3)
+            answer_text = checkPicture(url, numero_cube)
+            answer_json = answer_text.json()
+            if answer_json.get("nbrVotes") is not None :
+                if answer_json.get("nbrVotes") > nbrVotesMin:
+                    done = True
 
     # Réaliser les actions demandés
-    action = answer_json["answer"]
+    action = answer_json.get("answer")
 
     red, green, blue, white=cozmo.lights.red_light, cozmo.lights.green_light, cozmo.lights.blue_light, cozmo.lights.white_light
-    colors=[red, white, white, white]
+    colors=[red, green, blue, white]
 
     if(action== "red"):
         color_light(cube, red)
@@ -77,14 +88,14 @@ def program_cozmo_action(robot: cozmo.robot.Robot, nb_vote_init:int):
     elif(action== "green"):
         color_light(cube, green)
     elif(action== "crazy_color_1"):
-        crazy_color_1(cube)
+        crazy_color_1(cube, colors)
     elif(action== "crazy_color_2"):
         crazy_color_2(cube)
     elif(action == "off"):
         light_off(cube)
     else:
-        print("Action is not possible")
-        return None
+        error_string = "This action isn't a valide answer : " + action + "\nThe answer can be : red, blue, green, white, off, crazy_color_1, crazy_color_2"
+        raise ValueError(error_string)
 
     return 1
 
@@ -96,31 +107,13 @@ cozmo.run_program(program_cozmo_action, 1)
 # Fonctions pour intéragir avec le crowdsourcing
 ################################################
 
-def send_picture(image, url):
-    new_id = str(uuid.uuid4())
-    image.save("./Pendings/pending_" + new_id + ".png")
-    image_encode = base64.b64encode(image)
-    files = {'id' : new_id,'media': image_encode}
-    response = requests.post(url, files=files)
-    if response.status_code is 201 :
-        return new_id
-    else:
-        print("Erreur : \n" + "Code reçu : " + response.status_code + "\n" + response.text)
-        return None
+def sendPicture(encode64, url, id_cube):
+    response = requests.post(url, json={"id": id_cube, "image": str(encode64)})
+    return response
 
-def recup_picture_info(url, code_uuid):
-    response = requests.get(url + "/" + code_uuid)
-    if response.status_code is 200 :
-        j = response.json
-        if None :
-            pass 
-        else :
-            response_delete = requests.delete(url + "/" + code_uuid)
-            os.remove("./Pendings/pending_" + code_uuid + ".png")
-            return j      
-    else :
-        print("Erreur : \n" + "Code reçu : " + response.status_code + "\n" + response.text)
-        return None 
+def checkPicture(url, id_cube) :
+    response = requests.get(url.replace("images","answers") + "/" + id_cube)
+    return response
 
 #####################################################
 # Fonctions pour allumer les cubes
@@ -134,40 +127,32 @@ def light_off(cube):
         cozmo.logger.warning("Cozmo is not connected to a LightCube1Id cube - check the battery.")
 
 
-def crazy_light_1(cube):
-    if cube is not None:
-        for l in [red, green, blue, white]: 
-            cube.set_lights(l)
-            time.sleep(1)
-    else:
-        cozmo.logger.warning("Cozmo is not connected to a LightCube1Id cube - check the battery.")
+def crazy_color_1(cube, colors):
+    rolls = 40
+    while rolls >= 0 :
+        cube.set_lights(colors[rolls % len(colors)])
+        rolls = rolls - 1
+        time.sleep(0.5)
 
-def color_light(cube, color):
-    red, green, blue, white=cozmo.lights.red_light, cozmo.lights.green_light, cozmo.lights.blue_light, cozmo.lights.white_light
-    colors=[red, white, white, white]
-    if color in colors:
-        if color ==red:
-            cube.set_lights(cozmo.lights.red_light)
-        if color ==blue:
-            cube.set_lights(cozmo.lights.blue_light)
-        if color ==white:
-            cube.set_lights(cozmo.lights.white_light)
-        if color ==green:
-            cube.set_lights(cozmo.lights.green_light)
-        return 
-    else:
-        print("color not in available colors")
-        crazy_light_1(cube)
+def crazy_color_2(cube) :
+    r = 0
+    g = 0
+    b = 0
+    rolls = 40
+    while rolls >= 0 :
+        r = uniform(0, 255)
+        g = uniform(0, 255)
+        b = uniform(0, 255)
+        color_actual = cozmo.lights.Light(cozmo.lights.Color(rgb=(r,g,b)))
+        cube.set_lights(color_actual)
+        rolls = rolls - 1
+        time.sleep(0.5)
 
-def crazy_light_2(cube):
-    red, green, blue, white=cozmo.lights.red_light, cozmo.lights.green_light, cozmo.lights.blue_light, cozmo.lights.white_light
-    colors=[red, white, white, white]
-    if cube is not None:
-        for i in range(20):
-            colors = shift(colors, n=1)
-            cube.set_light_corners(colors[0], colors[1], colors[2], colors[3])
-            time.sleep(0.4)
-    else:
-        cozmo.logger.warning("Cozmo is not connected to a LightCube2Id cube - check the battery.")
+
+
+
+
+def color_light(cube,color):
+    cube.set_lights(color)
 
 

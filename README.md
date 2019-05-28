@@ -24,5 +24,19 @@ Pour résumer les liens ci-dessus :
     - Installer l'application COZMO sur le mobile
     - Installer adb ou équivalent sur l'ordinateur (avec les variables d'environnement PATH)
 
+Pour l'API et le front, on a utilisé WAMP (http://www.wampserver.com/#wampserver-64-bits-php-5-6-25-php-7) :
+*  Une fois installer, il faut modifier le fichier httpd.conf de la manière suivante : 
+    *   Retirer le caractère '#' devant la ligne "LoadModule headers_module modules/mod_headers.so"
+    *   Ajouter les lignes suivantes à la fin du fichier :
+        \<IfModule mod_headers.c\>
+        	# Accept cross-domain requests
+        	Header always set Access-Control-Allow-Origin "*"
+        	Header always set Access-Control-Allow-Headers "Content-Type"
+        \</IfModule\> 
+
+*  Il faut ensuite placer le dossier API dans le dossier www de WAMP.
+*  Lancer ou relancer WAMP pour que tout marche correctement.
+*  Taper l'URL suivant : localhost/API/affichage.php
+    
 
 

@@ -10,7 +10,7 @@
     </head>
     <body>
         
-        
+        <h1>Ici on affiche l'ID de toutes les images stockées sur le serveur :</h1>
         <div id="getAllId">
         </div>
         

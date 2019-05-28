@@ -13,13 +13,13 @@
         
         <?php 
             $id = $_GET['id'];
-            $nomImage = "panda";
         ?>
         
-        <img src="images/<?php echo $nomImage ?>.jpg" alt="Photo à deviner" />
         
         <div id="getImg">
         </div>
+        
+        <h2>Ici les utilisateurs vont voter sur ce que représente l'image :</h2>
         
         <form method="post" action="index.php?id=<?php echo $id ?>">
             <p>Réponse user 1 : </p><input type="text" name="AnswerUser1" required="required"/><br/>
@@ -91,7 +91,36 @@
 
          
          <script src="js/ajax.js"></script>
-         <script src="js/cours.js"></script>
+         
+        <script>
+            const getImage = document.getElementById("getImg");
+            ajaxGet("http://localhost:3000/v1/images/<?php echo $id ?>", function (reponse){
+                const image = JSON.parse(reponse);
+                const getIdElt = document.createElement("div");
+                getIdElt.textContent = image.id;
+                getIdElt.id = "id"
+                const getImgElt = document.createElement("img");
+                getImgElt.src = image.image;
+                getImage.appendChild(getIdElt);
+                getImage.appendChild(getImgElt);
+            });
+
+
+            const getAllId = document.getElementById("getAllId");
+            ajaxGet("http://localhost:3000/v1/images", function (reponse){
+                const ids = JSON.parse(reponse);
+                ids.forEach(function (id) {
+                    // Ajout du titre et du contenu de chaque article
+                    var p = document.createElement("p");
+                    var idElt = document.createElement("a");
+                    idElt.href = "index.php?id=" + id.id;
+                    idElt.textContent = id.id;
+                    p.appendChild(idElt);
+                    getAllId.appendChild(p);
+
+                });
+            });
+        </script>
         
     </body>
 </html>

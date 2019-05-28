@@ -16,6 +16,8 @@ ajaxGet("http://localhost/esir2_projet_aii_site_crowdfunding/javascript-web-srv/
 });
 
 
+
+
 const getImage = document.getElementById("getImg");
 ajaxGet("http://localhost:3000/v1/images/45745c60-7b1a-11e8-9c9c-2d42b21b1a3e", function (reponse){
     const image = JSON.parse(reponse);

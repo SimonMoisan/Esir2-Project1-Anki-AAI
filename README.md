@@ -48,14 +48,18 @@ Pour l'API et le front, on a utilisé WAMP (pour Windows) (http://www.wampserver
 
 ### Installation front
 
-TODO (installation node.js et modules)
+Avant de lancer l'API, il est important d'installer les modules adéquats. Pour cela Node.js doit être installé sur la machine.
+Pour lancer l'installation des modules il faut taper "npm install" à l'intérieur du repertoire API (contenant index.php, app.js, etc...).
+Cela peut prendre un moment, soyez patient.
 
 
 ## Utilisation
 
-### API
+Pour que le front affiche les images stockés dans l'API, il faut lancer le serveur en tapant "npm start" dans le repertoire API.
+Si jamais une erreur apparait, cela est surement du au fait qu'il manque un module. Pour y remedier, il faut identifier le module manquant dans le message d'erreur (assez explicite),
+et taper "npm install nomdumodule --save". Il faut laisser tourner le serveur et rafriachir la page du front si nécessaire pour voir les liens des images.
 
-TODO (commande de lancement du projet)
+### API
 
 Cette API ne possède que des POST et GET sur les parties d'urls suivantes `/images`, `/images/{id}`, `/answers` et `/answers/{id}`.
 
